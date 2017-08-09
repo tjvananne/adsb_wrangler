@@ -22,3 +22,14 @@ GBL_COLS_TO_EXTRACT <- c("Id", "Icao", "Rcvr", "Lat", "Long", "Reg", "Fseen", "T
                          "Galt", "AltT", "PosTime", "Mlat", "Spd", "SpdTyp", "Trak", "TrkH",
                          "Type", "Mdl", "Man", "Year", "Cnum", "Op", "OpIcao", "Sqk", "Vsi", "VsiT", "WTC",
                          "Species", "EngType", "Mil", "Cou", "Call", "Talt", "Ttrk")
+
+
+# one-time directory creation:
+if(!dir.exists("data")) {
+    
+    print("creating directories (one-time process)")
+    dir.create("data")
+    dir.create("data/temp_staging")
+    dir.create("data/temp_staging/jsonfiles")
+}
+
