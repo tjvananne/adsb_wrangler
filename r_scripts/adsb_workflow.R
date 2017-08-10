@@ -3,8 +3,8 @@
 # workflow for ADSB-Exchange project
 
 # home pc
-# setwd("C:/Users/Taylor/Documents/Nerd/adsb_exchange")
-setwd("C:/users/tvananne/documents/personal/github/adsb_wrangler")
+setwd("C:/Users/Taylor/Documents/Nerd/github_repos/adsb_wrangler")
+# setwd("C:/users/tvananne/documents/personal/github/adsb_wrangler")
 
 
 # source in the config file
@@ -25,3 +25,4 @@ GBL_ZIP_DATE <- "2017-07-28"  # 2017-07-28 is a wednesday
 source("r_scripts/adsb_01.R")
 
 
+rstudioapi::getActiveDocumentContext()$path

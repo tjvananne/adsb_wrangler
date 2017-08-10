@@ -36,3 +36,7 @@ vignettes/*.pdf
 *.json
 *.rds
 *.zip
+*.csv
+
+# python files
+*ipynb_checkpoints*
