@@ -13,9 +13,9 @@
 
 
 list.files()
-GBL_ZIP_DATE <- "2016-06-20" # just for exploration at first
-all_dat1 <- readRDS(file=paste0("data/daily_agg/all_daily_2016-06-20.rds"))
-all_dat2 <- readRDS(file=paste0("data/daily_agg/all_daily_2016-06-21.rds"))
+list.files("data/daily_agg")
+GBL_ZIP_DATE <- "2017-07-30" # just for exploration at first
+all_dat <- readRDS(file=paste0("data/daily_agg/all_daily_", GBL_ZIP_DATE, ".rds"))
 
 
 
@@ -23,15 +23,13 @@ all_dat2 <- readRDS(file=paste0("data/daily_agg/all_daily_2016-06-21.rds"))
 all_dat$order_id <- 1:nrow(all_dat)
 
 
-# accidentally have two Lat's and two Long's, remove col 13 and 14 and we're good
-all_dat2 <- all_dat[, c(c(1:12), 15:ncol(all_dat))]
-all_dat <- all_dat2; rm(all_dat2)
-
-
 all_dat <- all_dat %>%
     dplyr::arrange(Icao, order_id)
 
+sapply(all_dat, function(x) sum(x == "" | is.na(x)))
 
+
+# summary stats for columns
 all_dat_sum2 <- all_dat %>%
     dplyr::group_by(Icao) %>%
     dplyr::summarise(
@@ -42,6 +40,20 @@ all_dat_sum2 <- all_dat %>%
     )
 
 
+# keep only the non-missing lat/long
 all_dat_latlong <- all_dat %>%
-    dplyr::filter(Lat != "NA" & Long != "NA")
+    dplyr::filter(Lat != "" & Long != "" & Lat != '0' & Long != '0')
 
+rm(all_dat); gc()
+
+all_dat_latlong$Lat <- as.numeric(all_dat_latlong$Lat)
+all_dat_latlong$Long <- as.numeric(all_dat_latlong$Long)
+
+all_dat_latlong <- all_dat_latlong %>%
+    dplyr::filter(Lat <= 90 & Lat >= -90 & !is.na(Lat)) %>%
+    dplyr::filter(Long <= 180 & Long >= -180 & !is.na(Long))
+
+hist(all_dat_latlong$Lat, col='light blue')
+hist(all_dat_latlong$Long, col='light blue')
+
+write.csv(all_dat_latlong, paste0('data/daily_agg/all_daily_', GBL_ZIP_DATE, '.csv'), row.names = F)

@@ -36,3 +36,4 @@ vignettes/*.pdf
 *.json
 *.rds
 *.zip
+*.csv
