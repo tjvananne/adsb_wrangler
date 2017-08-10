@@ -17,6 +17,15 @@ list.files("data/daily_agg")
 GBL_ZIP_DATE <- "2017-07-30" # just for exploration at first
 all_dat <- readRDS(file=paste0("data/daily_agg/all_daily_", GBL_ZIP_DATE, ".rds"))
 
+library(readr)
+all_dat_csv <- readr::read_csv("data/daily_agg/all_daily_2017-07-30.csv")
+readr::write_csv(all_dat_csv, "data/daily_agg/all_daily_2017-07-30_clean.csv")
+
+
+# to get data into 'utf-8' for python
+con<-file('data/daily_agg/all_daily_2017-07-30_clean.csv',encoding="UTF-8")
+write.csv(all_dat_csv, file=con, row.names = F)
+
 
 
 # temporary fix til we rerun the scraper thing:
