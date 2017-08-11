@@ -82,6 +82,7 @@ print(t1_elapsed)
 
 
 t2_start <- Sys.time()
+print("combining the list of data frames into one...")
 list_of_dfs <- list_of_dfs[!is.na(list_of_dfs)]
 all_dat <- do.call(rbind, list_of_dfs)
 t2_elapsed <- Sys.time() - t2_start
