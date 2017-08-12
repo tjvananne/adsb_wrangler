@@ -17,12 +17,10 @@ source("r_scripts/adsb_FUNCTIONS.R")
 
 # not sure where to put this yet, but this'll be looped once we have a good process
 # GBL_ZIP_DATE <- "2016-06-20"
-GBL_ZIP_DATE <- "2017-07-28"  # 2017-07-28 is a wednesday
+GBL_ZIP_DATE <- "2017-07-29"  # 2017-07-28 is a wednesday
 
 
 
 # 01) download and process the file, saving it as a daily aggregate RDS:
 source("r_scripts/adsb_01.R")
 
-
-rstudioapi::getActiveDocumentContext()$path
