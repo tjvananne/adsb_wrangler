@@ -1,0 +1,11 @@
+conda create -n myds
+activate myds
+conda install bokeh
+conda install -c bokeh datashader
+conda install -c conda-forge -c ioam holoviews geoviews    # i think this is because it is so new 
+
+next steps:
+Texas wasn't included at all in the world map of flight paths
+filter down to just the lat long within texas
+https://www.mapsofworld.com/usa/states/texas/lat-long.html
+then replot the world and see where those fall
