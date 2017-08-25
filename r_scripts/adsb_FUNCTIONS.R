@@ -76,3 +76,29 @@ print("Loading in adsb_FUNCTIONS.R file...")
     
     
     
+# Convert "PosTime" (character milliseconds since 1970-01-01 epoch) to date ---------------
+    
+    postime_to_date <- function(para_postime, para_tz="GMT") {
+        
+        #' function assumes that you're passing in milliseconds
+        #' Returns as character string, not date, this is so we can sapply with it
+        
+        if(class(para_postime) == "character") {
+            warning("This will be faster if you pass in postime as numeric")
+            para_postime <- as.numeric(para_postime)
+        }
+        
+        seconds_since_epoch <- para_postime / 1000
+        return(as.character(as.POSIXct(seconds_since_epoch, origin="1970-01-01", tz=para_tz)))
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

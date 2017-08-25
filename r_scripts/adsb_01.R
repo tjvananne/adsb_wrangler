@@ -4,7 +4,16 @@
 # ADSB Exchange -- first round of processing
 # think of a better name than "_01" once we know what we're doing in here
 
+#' 8/23/2017 notes:
+#' If the files are too big to process in this manner, then we might need to
+#' think about creating a convex hull list of points as we go and then maybe
+#' trying to keep track of trips as we go also. Definitely keep track of the
+#' total number of points per aircraft as well. Also keep checking the "is on ground"
+#' flag as well, that should be a huge help when indicating helicopter "trips"
 
+
+
+    
 # split into a "downloader" script and a "processor" script
 
 # DOWNLOADER ----------------------------------------------------------------------
@@ -20,10 +29,19 @@ t0_elapsed <- Sys.time() - t0_start
 
 # PROCESSOR ------------------------------------------------------------------------
 
+
+    # adhoc nonsense DELETE THIS AFTERWARDS:
+    GBL_ZIP_STAGE_FILE <- "temp_zip_2017-08-17.zip"
+    file.exists(paste0(GBL_ZIP_STAGE_DIR, GBL_ZIP_STAGE_FILE))
+    
+
+
 # data frame of all files in the zip:
 staged_files <- unzip(paste0(GBL_ZIP_STAGE_DIR, GBL_ZIP_STAGE_FILE), list=TRUE)
 numb_staged_files <- length(staged_files$Name)
 list_of_dfs <- vector(mode="list", numb_staged_files)
+error_json_files <- character(numb_staged_files)
+
 
 t1_start <- Sys.time()
 
@@ -55,6 +73,22 @@ for(i in 1:numb_staged_files) {
             # setup which columns we're after and then extract the values from json:
             this <- tv_extract_json_multi_value(dat, GBL_COLS_TO_EXTRACT, this_filename)
             
+                # TODO: add a few different preprocessing steps
+                # this is where we'd want to do some daily convex hull
+                # daily trip aggregation -- each of these should be a function
+            
+                # for now, just remove blanks in very key columns
+                this <- this[
+                    this$Lat != '' &
+                    this$Long != '' &
+                    this$Reg != ''
+                ,]
+            
+                # remove if these key columns have been duplicated
+                keycols <- paste(this$Icao, this$Reg, this$Lat, this$Long, this$Alt, this$Spd, sep='|')
+                this <- this[!duplicated(keycols), ]
+                
+            
             
             # if it is a not-null dataframe, then add it to the list of data frames
             if((!is.null(this)) & is.data.frame(this)) {
@@ -67,6 +101,13 @@ for(i in 1:numb_staged_files) {
             # to remove the file
             file.remove(paste0(GBL_ZIP_STAGE_JSON_DIR, "/", this_file))
             
+        },
+        
+        error = function(cond) {
+            print(paste0("there was an error with this file: ", this_file))
+            print(paste0("here's the error message: ", cond))
+            file.remove(paste0(GBL_ZIP_STAGE_JSON_DIR, "/", this_file))
+            error_json_files[i] <- this_file
         },
         
         finally = {
@@ -84,7 +125,8 @@ print(t1_elapsed)
 t2_start <- Sys.time()
 print("combining the list of data frames into one...")
 list_of_dfs <- list_of_dfs[!is.na(list_of_dfs)]
-all_dat <- do.call(rbind, list_of_dfs)
+# all_dat <- do.call(rbind, list_of_dfs)
+all_dat <- bind_rows(list_of_dfs)
 t2_elapsed <- Sys.time() - t2_start
 print(t2_elapsed)
 
