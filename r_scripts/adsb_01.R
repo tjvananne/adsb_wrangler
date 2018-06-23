@@ -11,7 +11,8 @@
 #' total number of points per aircraft as well. Also keep checking the "is on ground"
 #' flag as well, that should be a huge help when indicating helicopter "trips"
 
-
+source("r_scripts/adsb_CONFIG.R")
+source("r_scripts/adsb_FUNCTIONS.R")
 
     
 # split into a "downloader" script and a "processor" script
@@ -21,20 +22,30 @@
 
 # download the big zip file:
 
-t0_start <- Sys.time()
-tv_download_zip(GBL_ZIP_DATE, GBL_ZIP_STAGE_FILE, GBL_ZIP_STAGE_DIR)
-t0_elapsed <- Sys.time() - t0_start
+    # # don't do this right now... takes too long
+    # t0_start <- Sys.time()
+    # tv_download_zip(GBL_ZIP_DATE, GBL_ZIP_STAGE_FILE, GBL_ZIP_STAGE_DIR)
+    # t0_elapsed <- Sys.time() - t0_start
 
 
 
 # PROCESSOR ------------------------------------------------------------------------
 
 
-    # adhoc nonsense DELETE THIS AFTERWARDS:
-    GBL_ZIP_STAGE_FILE <- "temp_zip_2017-08-17.zip"
-    file.exists(paste0(GBL_ZIP_STAGE_DIR, GBL_ZIP_STAGE_FILE))
-    
+# try catch block isn't working - the error portion of the try-catch isn't saving
+# the name of the file that produced an error
 
+# "there was an error with this file: 2018-04-15-0356Z.json"
+# [1] "here's the error message: Error in parse_con(txt, bigint_as_char): parse error: unallowed token at this point in JSON text\n          
+# lgH\":20,\"flgW\":85,\"acList\":[ ,{\"Id\":8834817,\"Rcvr\":23092,\"Ha\n      
+
+
+
+list.files("data/temp_staging")
+
+# overwrite global config value with the name of the file we actually want to process
+GBL_ZIP_STAGE_FILE  <- "2018-04-19.zip"
+GBL_ZIP_DATE        <- "2018-04-19"
 
 # data frame of all files in the zip:
 staged_files <- unzip(paste0(GBL_ZIP_STAGE_DIR, GBL_ZIP_STAGE_FILE), list=TRUE)
@@ -43,9 +54,11 @@ list_of_dfs <- vector(mode="list", numb_staged_files)
 error_json_files <- character(numb_staged_files)
 
 
+
 t1_start <- Sys.time()
 
 for(i in 1:numb_staged_files) {
+# for(i in bad_file_indx) {
     
     print( paste0(round(i / numb_staged_files * 100, 2), " % complete..."))
     
@@ -61,7 +74,7 @@ for(i in 1:numb_staged_files) {
     
     
     # JSON can fail from this source, so wrap it in a tryCatch
-    tryCatch(
+    error_json_files[i] <- tryCatch(
         expr = {
             
             # read
@@ -107,13 +120,14 @@ for(i in 1:numb_staged_files) {
             print(paste0("there was an error with this file: ", this_file))
             print(paste0("here's the error message: ", cond))
             file.remove(paste0(GBL_ZIP_STAGE_JSON_DIR, "/", this_file))
-            error_json_files[i] <- this_file
-        },
-        
-        finally = {
-            # this is the last thing in the for loop, so a next can go in the finally block
-            next
+            return(this_file)
         }
+        #,
+        
+        # finally = {
+        #     # this is the last thing in the for loop, so a next can go in the finally block
+        #     next
+        # }
     )
     
 }
@@ -137,7 +151,9 @@ if(!dir.exists("data/daily_agg")) {
     dir.create("data/daily_agg")    
 }
 
-saveRDS(all_dat, paste0("data/daily_agg/all_daily_", GBL_ZIP_DATE, ".rds"))
 
+error_json_files <- error_json_files[error_json_files != ""]
+saveRDS(all_dat, paste0("data/daily_agg/all_daily_", GBL_ZIP_DATE, ".rds"))
+saveRDS(error_json_files, paste0("data/daily_agg/error_reports/error_json_files_", GBL_ZIP_DATE, ".rds"))
 
 
